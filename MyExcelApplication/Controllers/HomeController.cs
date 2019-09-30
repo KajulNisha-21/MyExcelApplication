@@ -194,5 +194,11 @@ namespace MyExcelApplication.Controllers
         {
             return View();
         }
+
+        //working with git commit changes
+        public ActionResult GetResult2()
+        {
+            return View();
+        }
     }
 }
