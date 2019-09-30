@@ -13,7 +13,6 @@ namespace MyExcelApplication.Controllers
 {
     public class HomeController : Controller
     {
-        #region important logics
         TreeHierrarchyEntities db = new TreeHierrarchyEntities();
         //Home page
         public ActionResult Index()
@@ -184,20 +183,6 @@ namespace MyExcelApplication.Controllers
         {
             ViewBag.Message = "Your contact page.";
 
-            return View();
-        }
-        #endregion
-
-
-        //working with git commit changes
-        public ActionResult GetResult()
-        {
-            return View();
-        }
-
-        //working with git commit changes
-        public ActionResult GetResult2()
-        {
             return View();
         }
     }
