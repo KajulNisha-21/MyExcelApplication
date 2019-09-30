@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+@*<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>JUquery Template sample</title>
+
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $.ajax({
+                type: "GET",
+                url: '/StudentList/TStudentList',
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    alert("Sucess");
+                    //debugger
+                    if (response != null) {
+
+                        $("#MyTemplate").tmpl(response).appendTo("#employeeContainer");
+                    }
+                }
+
+            });          
+        });
+    </script>
+
+    <script id="MyTemplate" type="text/x-jquery-tmpl">
+        <tr>
+            <td>${RollNo}</td>
+            <td>${Name}</td>
+            <td>${Marks}</td>
+            <td>${Result}</td>
+        </tr>
+    </script>
+
+</head>
+<body>
+    <h1>Get student List (automatically) using - jquery template</h1>
+    <table border="1">
+        <thead>
+        <th>RollNo</th>
+        <th>Name</th>
+        <th>Marks</th>
+        <th>Result</th>
+        </thead>
+        <tbody id="employeeContainer"></tbody>
+    </table>
+</body>
+</html>*@
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head id="Head1" runat="server">
+    <title>jQuery Templates – tmpl(), template() and tmplItem()</title>
+   
+    <script language="javascript" type="text/javascript">
+        $(function () {
+            var attendees = [
+                { Name: "Hajan", Surname: "Selmani", speaker: true, phones: [070555555, 071888999, 071222333] },
+                { Name: "Darko", Surname: "Milevski", phones: [070555555, 071888999, 071222333] },
+                { Name: "Ljubomir", Surname: "Zivanovic", phones: [070555555, 071222333] },
+                { Name: "Mile", Surname: "Grujovski", phones: [070555555, 071888999, 071222333] },
+                { Name: "Ivan", Surname: "Acev", phones: [071888999, 071222333] },
+                { Name: "Dejan", Surname: "Dimitrovski", speaker: true, phones: [070555555, 071222333] }
+            ];
+
+            $("#attendeesTemplate").template("listAttendees"); //compiling the template to named listAttendees
+
+            $.tmpl("listAttendees", attendees).appendTo("#attendees"); //using compiled template
+            //$("#attendeesTemplate").tmpl(attendees).appendTo("#attendees");
+
+            $("#findSpeaker").click(function () {
+                var speakers = $("li.speaker:last").tmplItem();
+                var speaker = speakers.data;
+                var htmlElement = speakers.nodes;
+                $(htmlElement).css("background-color", "yellow");
+            });
+
+            $("#addNew").click(function () {
+                var sps = false;
+                if ($("#speaks").attr("checked")) sps = true;
+
+                attendees.push({ Name: $("#name").val(), Surname: $("#surname").val(), speaker: sps });
+                $("#attendees").html("");
+                $.tmpl("listAttendees", attendees).appendTo("#attendees");
+            });
+        });
+    </script>
+
+    <script id="attendeesTemplate" type="text/html">
+        {{if speaker}}
+        <li class="speaker">
+            ${Name} ${Surname}
+            (<font color="green">speaker</font>)
+        </li>
+        {{else}}
+        <li class="attendee">
+            ${Name} ${Surname}
+            (attendee)
+        </li>
+        {{/if}}
+    </script>
+</head>
+<body>
+    <div id="content">
+        <div id="list" style="width:300px;">
+            <ol id="attendees"></ol>
+        </div>
+        <div id="addForm">
+            Name: <input id="name" type="text" style="display:inline;" />
+            Surname: <input id="surname" type="text" />
+            Speaker: <input id="speaks" type="checkbox" /> <br />
+            <a id="addNew" href="#">Add New</a><br />
+        </div>
+        <a id="findSpeaker" href="#">HighLight Last Speaker</a>
+    </div>
+</body>
+</html>

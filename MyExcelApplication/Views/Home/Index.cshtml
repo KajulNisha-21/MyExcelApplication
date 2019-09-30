@@ -1,0 +1,335 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Jquery Ajax Dynamic tabs example</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="~/Content/DynamicTabsCustom.css" rel="stylesheet" />
+    <link href="~/DatatablesJquery/DataTables-1.10.19/media/css/jquery.dataTables.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery-3.4.1.min.js"></script>
+    <script src="~/Scripts/jquery.tmpl.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <script src="~/DatatablesJquery/DataTables-1.10.19/media/js/jquery.dataTables.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+
+    <style>
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            color: white !important;
+            border: 1px solid green !important;
+            background-color: green !important;
+            background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, green), color-stop(100%, green)) !important;
+            background: -webkit-linear-gradient(top, green 0%, green 100%) !important;
+            background: -moz-linear-gradient(top, green 0%, green 100%) !important;
+            background: -ms-linear-gradient(top, green 0%, green 100%) !important;
+            background: -o-linear-gradient(top, green 0%, green 100%) !important;
+            background: linear-gradient(to bottom, green 0%, green 100%) !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate {
+            margin-right: 500px;
+        }
+        .nav-tabs > li.active > a, .nav-tabs > li.active > a:focus, .nav-tabs > li.active > a:hover {
+            background-color: aquamarine;
+        }
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            //get all student list function
+            loadStudentlist();
+            DataTable();
+            $("#myTab a").click(function (e) {
+                e.preventDefault();
+                $(this).tab('show');
+            });
+
+            //hide & show msg at necessary time
+            $('#SuccessMsg').hide();
+            $('#NoRecordMsg').hide();
+            //$('#EmptyTable').show();
+
+            //check it (Clear button Function)
+            $('#ClearRecord').click(function () {
+
+                //location.reload(true);
+                $('#SuccessMsg').hide();
+                $('#StudentContainer').empty();
+                $('#NoRecordMsg').hide();
+                var ClearSearch = $('#SearchFromFile');
+                ClearSearch.val("");
+
+
+            });
+
+            //search all the records in the field
+            $("#Search-File").on("click", "#Searchrecord", function () {
+
+                //Send the JSON array to Controller using AJAX.
+                $.ajax({
+                    type: "POST",
+                    url: "/Home/SearchStudents",
+                    data: '{students: "' + $("#SearchFromFile").val() + '" }',
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        //debugger
+                        if (response != null && response != 0) {
+                            //alert(" record(s) Searched successfully.");
+                            $('#SuccessMsg').show();
+                            console.log(response);
+                            $('#MyTemplate').tmpl(response).appendTo('#StudentContainer');
+
+                        }
+                        else if (response == 0) {
+                            //alert("No records found");
+                            $('#NoRecordMsg').show();
+                        }
+                        else {
+                            alert("Something went wrong");
+                        }
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        alert(response.responseText);
+                    }
+
+                });               
+
+            });
+
+            //function for datatable
+            function DataTable() {
+                $('#dataTableId').DataTable({
+                    "ajax": {
+                        "url": "/Home/paginationIndexList",
+                        "type": "GET",
+                        "datatype": "json"
+                    },
+                    "columns": [
+                        { "data": "RollNo", "autoWidth": true },
+                        { "data": "Name", "autoWidth": true },
+                        { "data": "Marks", "autoWidth": true },
+                        { "data": "Result", "autoWidth": true }
+                    ]
+                });
+            };
+
+            //direct ajax to load student list without button click
+            function loadStudentlist() {
+                $.ajax({
+                    type: "GET",
+                    url: '/Home/DataList',
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        //alert("Sucess");
+                        //debugger
+                        if (response != null) {
+                            //$('#EmptyTable').hide();
+                            $("#MyTemplate").tmpl(response).appendTo("#StudentListContainer");
+                        }
+                        else if (response == 0) {
+                            alert("No records found");
+                            //$('#EmptyTable').show();
+                        }
+                        else {
+                            alert("Something went wrong");
+                        }
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        alert(response.responseText);
+                    }
+
+                });
+            };
+
+            //upload excel to db
+            $('#btnUpload').click(function () {
+                // Checking whether FormData is available in browser
+                if (window.FormData !== undefined) {
+
+                    var fileUpload = $("#FileUpload").get(0);
+                    var files = fileUpload.files;
+
+                    // Create FormData object
+                    var fileData = new FormData();
+
+                    // Looping over all files and add it to FormData object
+                    for (var i = 0; i < files.length; i++) {
+                        fileData.append(files[i].name, files[i]);
+                    }
+
+
+                    $.ajax({
+                        url: '/Home/InsertExcelData',
+                        type: "POST",
+                        contentType: false, // Not to set any content header
+                        processData: false, // Not to process data
+                        data: fileData,
+                        success: function (result) {
+                            alert(result);
+                            $("#FileUpload").val('');
+                            $('#StudentListContainer').empty();
+                            loadStudentlist();
+
+                        },
+                        error: function (err) {
+                            alert(err.statusText);
+                        }
+                    });
+
+
+                } else {
+                    alert("FormData is not supported.");
+                }
+            });
+
+        });
+
+    </script>
+        
+    <script id="MyTemplate" type="text/x-jquery-tmpl">
+
+        <tr>
+            <td>${RollNo}</td>
+            <td>${Name}</td>
+            <td>${Marks}</td>
+            <td>
+                {{if Result=="Pass"}}
+                <em style="color:green">${Result}</em>
+                {{else}}
+                <em style="color:red">${Result}</em>
+                {{/if}}
+            </td>
+        </tr>
+    </script>
+
+
+
+
+
+</head>
+<body>
+
+    <div class="jumbotron">
+        <h1>AMES Higher secondary School</h1>
+        <p class="lead">AMES Higher secondary School is a school with full knowledge for building great Students.</p>
+        <img src="~/img/images.jpg" />
+    </div>
+    
+    <div class="container">
+        <h2>Dynamic Tabs</h2>
+        <p>Get More information here!!!</p>
+
+        <ul id="myTab" class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#home">Search Students list</a></li>
+            <li><a data-toggle="tab" href="#menu1">Student Details</a></li>
+            <li><a data-toggle="tab" href="#menu2">Upload Student data</a></li>
+            <li><a data-toggle="tab" href="#menu3">DataTable</a></li>
+        </ul>
+
+        <div class="tab-content">
+
+            <div id="home" class="tab-pane fade in active">
+                <div>
+                    <h1>Search - Student Mark List</h1><hr />                    
+                        <div id="Search-File">
+                            <input type="text" id="SearchFromFile" placeholder="Enter Name to search" />
+                            <input type="button" value="Search" id="Searchrecord" class="bg-success" />
+                            <input type="button" value="Clear Results" id="ClearRecord" class="bg-warning" /><br /><br />
+                            <h6 id="SuccessMsg" style="color:green">!!! Here the results !!!</h6>
+                            <h6 id="NoRecordMsg" style="color:red">!!! Results Not Found !!!</h6>
+                            <p id="showData"></p><hr />
+                        </div>
+                        <div>
+                            <table id="StudentDetails" class="table" cellpadding="0" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th style="width:150px">RollNo</th>
+                                        <th style="width:150px">Name</th>
+                                        <th style="width:150px">Marks</th>
+                                        <th style="width:150px">Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="StudentContainer"></tbody>
+                            </table>
+                        </div>                   
+                </div>
+            </div>
+
+            <div id="menu1" class="tab-pane fade">
+                <div>
+                    <h1>Student Mark List - Result</h1>
+                    <hr />                      
+                   
+                        <div>
+                            <table id="StudentDetails" class="table" cellpadding="0" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th style="width:150px">RollNo</th>
+                                        <th style="width:150px">Name</th>
+                                        <th style="width:150px">Marks</th>
+                                        <th style="width:150px">Result</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="StudentListContainer"></tbody>
+                            </table>
+                        </div>                    
+                </div>
+            </div>
+
+            <div id="menu2" class="tab-pane fade">
+                <form id="UploadFrom" method="POST" enctype="multipart/form-data">
+                    @* upload excel to insert *@
+                    <div id="Uploads-File">
+                        <h3>Upload from files to insert data</h3><br>
+                        <input type="file" value="Upload File" id="FileUpload" name="postedFile" class="alert-warning" /><br />                       
+                        <input type="button" value="Upload Data" id="btnUpload" class="success alert-success" /><br />
+                    </div>
+                </form>
+
+                    <hr />
+
+                    @* display excel data as table *@
+                    <div id="dvExcel"></div>
+            </div>      
+            
+            <div id="menu3" class="tab-pane fade">
+                <div class="l-box">
+                    <div class="l-box-header">
+                        <h1>My Student List - Data table</h1>
+                    </div>
+                    <div class="l-box-body">
+                        <table id="dataTableId" cellspacing="0" width="100%" class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>RollNo</th>
+                                    <th>Name</th>
+                                    <th>Marks</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
+
+
+

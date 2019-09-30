@@ -1,0 +1,110 @@
+﻿@model MyExcelApplication.Models.StudentList
+<html>
+<head>
+    <title>Pagination</title>
+    <link href="~/Content/Paging.css" rel="stylesheet" />
+    <script src="~/Scripts/Paging.js"></script>
+    <script src="~/Scripts/jquery.tmpl.js"></script>
+    <script src="~/Scripts/jquery-ui-1.12.1.min.js"></script>
+
+    <style>
+
+        .tableData {
+            border-left: solid 1px #D8C3C3;
+            border-top: solid 1px #D8C3C3;
+        }
+
+
+
+            .tableData tr {
+            }
+
+
+
+            .tableData td, .tableData th {
+                border-right: solid 1px #D8C3C3;
+                border-bottom: solid 1px #D8C3C3;
+                text-align: left;
+                padding: 5px;
+            }
+
+
+
+            .tableData td {
+            }
+
+
+
+            .tableData th {
+                background-color: #FAFAFA;
+                padding: 7px 5px;
+                border-bottom-color: #9C9C9C;
+            }
+    </style>
+
+</head>
+<body>
+    <div>
+        <table id="tbldata" class="tableData">
+            <thead>
+                <tr>
+                    <th style="width:150px">RollNo</th>
+                    <th style="width:150px">Name</th>
+                    <th style="width:150px">Marks</th>
+                    <th style="width:150px">Result</th>
+                </tr>
+            </thead>
+            <tbody id="StudentContainer"></tbody>
+        </table>
+
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+<script type="text/javascript">
+    $(document).ready(function () {
+        $.ajax({
+            type: "GET",
+            url: '/Home/DataList',
+            contentType: "application/json",
+            dataType: "json",
+            success: function (response) {
+                alert("Sucess");
+                //debugger
+                if (response != null) {                    
+                    $("#MyTemplate").tmpl(response).appendTo("#StudentContainer");
+                }
+            }
+
+        });      
+
+    });
+
+</script>
+
+<script id="MyTemplate" type="text/x-jquery-tmpl">
+    <tr>
+        <td>${RollNo}</td>
+        <td>${Name}</td>
+        <td>${Marks}</td>
+        <td>${Result}</td>
+    </tr>
+</script>
+
+
+
+@*<script>
+
+    $(function () {
+
+        $('#tbldata').paging({ limit: 5 });
+
+    })
+
+</script>*@

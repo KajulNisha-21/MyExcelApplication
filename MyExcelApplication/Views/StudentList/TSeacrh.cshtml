@@ -1,0 +1,128 @@
+﻿@model MyExcelApplication.Models.StudentList
+
+<html>
+<head>
+    <title>Bulk search</title>
+    @* My custom style sheet *@
+    <link href="~/Content/CustomStyles.css" rel="stylesheet" />
+    <script src="~/Scripts/jquery.tmpl.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            //template
+            //$.template('TableTemplate', '<tr>\
+            //<td>${ RollNo }</td>\
+            //<td>${ Name }</td>\
+            //<td>${ Marks }</td>\
+            //<td>{{ if Result == "Fail" }} <font color="red">${Result}</font>{{/if}}{{ if Result != "Fail" }} <font color="Green">${Result}</font> </td>{{/if}} \
+            //</tr>');            
+
+
+            //hide & show msg at necessary time
+            $('#SuccessMsg').hide();
+            $('#NoRecordMsg').hide();
+
+            //check it (Clear button Function)
+            $('#ClearRecord').click(function () {
+
+                //location.reload(true);
+                $('#SuccessMsg').hide();
+                $('#StudentContainer').empty();
+                $('#NoRecordMsg').hide();
+                var ClearSearch = $('#SearchFromFile');
+                ClearSearch.val("");
+
+
+            });
+
+            //search all the records in the field
+            $("body").on("click", "#Searchrecord", function () {
+
+                //Send the JSON array to Controller using AJAX.
+                $.ajax({
+                    type: "POST",
+                    url: "/StudentList/SearchStudents",
+                    data: '{students: "' + $("#SearchFromFile").val() + '" }',
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        //debugger
+                        if (response != null && response != 0) {
+                            alert(" record(s) Searched successfully.");
+                            $('#SuccessMsg').show();
+                            console.log(response);
+                            //$.tmpl('TableTemplate', response).appendTo('#StudentContainer');
+                            $('#MyTemplate').tmpl(response).appendTo('#StudentContainer');
+
+                        }
+                        else if (response == 0) {
+                            alert("No records found");
+                            $('#NoRecordMsg').show();
+                        }
+                        else {
+                            alert("Something went wrong");
+                        }
+                    },
+                    failure: function (response) {
+                        alert(response.responseText);
+                    },
+                    error: function (response) {
+                        alert(response.responseText);
+                    }
+
+                });
+            });
+        });
+
+    </script>
+
+    <script id="MyTemplate" type="text/x-jquery-tmpl">
+        <tr>
+            <td>${RollNo}</td>
+            <td>${Name}</td>
+            <td>${Marks}</td>
+            <td>
+                {{if Result=="Pass"}}
+                <em style="color:green">${Result}</em>
+                {{else}}
+                <em style="color:red">${Result}</em>
+                {{/if}}
+            </td>
+        </tr>
+    </script>
+
+
+   
+</head>
+<body>
+    <h1>Student Mark List</h1><hr />
+
+    <form id="UploadFrom" method="POST" enctype="multipart/form-data">
+
+        <div id="Search-File">
+            <input type="text" id="SearchFromFile" placeholder="Enter Name to search" />
+            <input type="button" value="Search" id="Searchrecord" class="bg-success" />
+            <input type="button" value="Clear Results" id="ClearRecord" class="bg-warning" /><br /><br />
+            <h6 id="SuccessMsg" style="color:green">!!! Here the results !!!</h6>
+            <h6 id="NoRecordMsg" style="color:red">!!! Results Not Found !!!</h6>
+            <p id="showData"></p><hr />
+        </div>
+        <div>
+            <table id="StudentDetails" class="table" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width:150px">RollNo</th>
+                        <th style="width:150px">Name</th>
+                        <th style="width:150px">Marks</th>
+                        <th style="width:150px">Result</th>
+                    </tr>
+                </thead>
+                <tbody id="StudentContainer"></tbody>
+            </table>
+        </div>
+      
+    </form>
+</body>
+</html>

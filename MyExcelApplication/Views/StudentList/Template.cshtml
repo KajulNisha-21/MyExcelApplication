@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>JUquery Template sample</title>
+    
+   
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var employeeData = [
+                { FirstName: "Rob", LastName: "Mathews", Age: 26 },
+                { FirstName: "Richie", LastName: "Richards", Age: 32 },
+                { FirstName: "Shawn", LastName: "Clarke", Age: 53 },
+                { FirstName: "Dave", LastName: "Canterburry", Age: 42 }
+            ];
+
+            $("#MyTemplate").tmpl(employeeData).appendTo("#employeeContainer");
+        });
+    </script>
+    <script id="MyTemplate" type="text/x-jquery-tmpl">
+        <tr>
+            <td>${FirstName}</td>
+            <td>${LastName}</td>
+            <td>${Age}</td>
+        </tr>
+    </script>
+</head>
+<body>
+    <table>
+        <thead>
+        <th>
+            First Name
+        </th>
+        <th>
+            Last Name
+        </th>
+        <th>
+            Age
+        </th>
+        </thead>
+        <tbody id="employeeContainer"></tbody>
+    </table>
+</body>
+</html>

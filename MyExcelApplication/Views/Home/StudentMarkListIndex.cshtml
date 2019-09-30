@@ -1,0 +1,161 @@
+﻿@model MyExcelApplication.Models.StudentList
+
+<html>
+<head>
+    <title>Bulk search</title>
+
+    @* My custom style sheet *@
+    <link href="~/Content/CustomStyles.css" rel="stylesheet" />
+
+
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/xlsx.full.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.5/jszip.js"></script>
+
+    @* rendered my script *@
+    <script src="~/Scripts/MyCustomScript.js"></script>
+
+    <script type="text/javascript">
+        $("body").on("click", "#btnAdd", function () {
+            //Reference the Name and Country TextBoxes.
+            // Reference the TextBoxes.
+            var Name = $("#Name");
+            var Marks = $("#Marks");
+            var Result = $("#Result");
+
+            //Get the reference of the Table's TBODY element.
+            var tBody = $("#StudentDetails > TBODY")[0];
+
+            //Add Row.
+            var row = tBody.insertRow(-1);
+
+            //Add Name cell.
+            var cell = $(row.insertCell(-1));
+            cell.html(Name.val());
+
+            //Add marks cell.
+            cell = $(row.insertCell(-1));
+            cell.html(Marks.val());
+
+            //add result cell
+            cell = $(row.insertCell(-1));
+            cell.html(Result.val());
+
+            //Add Button cell.
+            cell = $(row.insertCell(-1));
+            var btnRemove = $("<input />");
+            btnRemove.attr("type", "button");
+            btnRemove.attr("onclick", "Remove(this);");
+            btnRemove.val("Remove");
+            cell.append(btnRemove);
+
+            //Clear the TextBoxes.
+            Name.val("");
+            Marks.val("");
+            Result.val("");
+        });
+
+        function Remove(button) {
+            //Determine the reference of the Row using the Button.
+            var row = $(button).closest("TR");
+            var name = $("TD", row).eq(0).html();
+            if (confirm("Do you want to delete: " + name)) {
+                //Get the reference of the Table.
+                var table = $("#StudentDetails")[0];
+
+                //Delete the Table row using it's Index.
+                table.deleteRow(row[0].rowIndex);
+            }
+        };
+
+        $("body").on("click", "#btnSave", function () {
+            //Loop through the Table rows and build a JSON array.
+            var Students = new Array();
+            $("#StudentDetails TBODY TR").each(function () {
+                var row = $(this);
+                var student = {};
+                student.Name = row.find("TD").eq(0).html();
+                student.Marks = row.find("TD").eq(1).html();
+                student.Result = row.find("TD").eq(2).html();
+                Students.push(student);
+            });
+
+            //Send the JSON array to Controller using AJAX.
+            $.ajax({
+                type: "POST",
+                url: "/StudentList/InsertStudent",
+                data: JSON.stringify(Students),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (r) {
+                    alert(r + " record(s) inserted.");
+                }
+            });
+        });
+    </script>
+
+
+</head>
+<body>
+    <h1>Student Mark List</h1><hr />
+
+    <form id="UploadFrom" method="POST" enctype="multipart/form-data">
+
+        <div id="Search-File">
+            <input type="text" id="SearchFromFile" placeholder="Enter Name to search" />
+            <input type="button" value="Search" id="Searchrecord" class="bg-success" />
+            <input type="button" value="Clear Results" id="ClearRecord" class="bg-warning" /><br /><br />
+            <h6 id="SuccessMsg" style="color:green">!!! Here the results !!!</h6>
+            <h6 id="NoRecordMsg" style="color:red">!!! Results Not Found !!!</h6>
+            <p id="showData"></p><hr />
+        </div>
+
+
+        <div id="Bind-Datas">
+            <h3>Bulk Insert of Student Records</h3><br>
+            <table id="StudentDetails" class="table" cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th style="width:150px">Name</th>
+                        <th style="width:150px">Marks</th>
+                        <th style="width:150px">Result</th>
+                        <th style="width:150px"></th>
+
+                    </tr>
+                </thead>
+                <tbody></tbody>
+                <tfoot>
+                    <tr>
+                        <td><input type="text" id="Name" /></td>
+                        <td><input type="text" id="Marks" /></td>
+                        <td><input type="text" id="Result" /></td>
+
+                        <td><input type="button" id="btnAdd" value="Add" /></td>
+
+                    </tr>
+                </tfoot>
+            </table>
+
+        </div><br />
+
+        <br />
+        <input type="button" id="btnSave" value="Save All" class="danger btn-danger" /><br /><hr />
+
+        @* upload excel to insert *@
+        <div id="Uploads-File">
+            <h3>Upload from files to Read & insert data</h3><br>
+            <input type="file" value="Upload File" id="FileUpload" name="postedFile" class="alert-warning" /><br />
+            <input type="button" value="load" id="SubmitFile" class="alert-danger" />
+            <input type="button" value="Upload Data" id="btnUpload" class="success alert-success" /><br />
+        </div>
+
+        <hr />
+
+        @* display excel data as table *@
+        <div id="dvExcel"></div>
+    </form>
+</body>
+</html>
