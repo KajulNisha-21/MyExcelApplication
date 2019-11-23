@@ -19,6 +19,12 @@ namespace MyExcelApplication.Controllers
         {
             return View();
         }
+        
+        //Test page
+        public ActionResult Test()
+        {
+            return View();
+        }
               
         //trimmed spaces
         public ActionResult SearchStudents(string students)
