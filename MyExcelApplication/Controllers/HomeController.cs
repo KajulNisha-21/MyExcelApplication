@@ -20,7 +20,7 @@ namespace MyExcelApplication.Controllers
             return View();
         }
         
-        //Test page
+        //Test page - for test purpose
         public ActionResult Test()
         {
             return View();
